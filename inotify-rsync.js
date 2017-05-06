@@ -27,19 +27,19 @@ var path=require('path');
 var fs=require('fs');
 
 if (!rsync_destination) {
-	console.log('usage: inotify-sync <dirname> <rsync_destination> <rsync_options>');
-	process.exit(1);
+  console.log('usage: inotify-sync <dirname> <rsync_destination> <rsync_options>');
+  process.exit(1);
 }
 
 process.cwd(watchdir);
 
 var inotifywait_args=[
-	'-m',
-	'-e','close_write',
-	'-e','moved_to',
-	'-e','moved_from',
-	'-e','delete',
-	'--csv'
+  '-m',
+  '-e','close_write',
+  '-e','moved_to',
+  '-e','moved_from',
+  '-e','delete',
+  '--csv'
 ];
 
 inotifywait_args.push('-r');
@@ -47,76 +47,76 @@ inotifywait_args.push('.');
 
 
 var inotifywait=child_process.spawn('inotifywait',inotifywait_args,{
-	cwd: watchdir,
-	stdio: ['pipe','pipe',process.stderr]
+  cwd: watchdir,
+  stdio: ['pipe','pipe',process.stderr]
 });
 
 var parser=csv_parse({
-	delimiter: ',',
-	columns: ['dirname','eventname','filename']
+  delimiter: ',',
+  columns: ['dirname','eventname','filename']
 
 });
 
 inotifywait.stdout.pipe(parser).on('data',function(row){
-	var colname=['dirname','eventname','filename'];
-	var i=0;
-	var event={};
-	for (var col in row) {
-		event[colname[i++]]=row[col];
-	}
-	if (i<3) return;
+  var colname=['dirname','eventname','filename'];
+  var i=0;
+  var event={};
+  for (var col in row) {
+    event[colname[i++]]=row[col];
+  }
+  if (i<3) return;
 
-	var pathname=path.join(watchdir,event.dirname,event.filename);
-	fs.stat(pathname,function(err,stats){
-		if (err) {
-			console.log(err)
-		} else if (stats.isFile()) {
-//			console.error(event);
-			switch(event.eventname){
-				case 'CLOSE_WRITE,CLOSE':
-				case 'MOVED_TO':
-				  rsync(pathname,event.dirname);
-					break;
-			}
-		}
-	})
+  var pathname=path.join(watchdir,event.dirname,event.filename);
+  fs.stat(pathname,function(err,stats){
+    if (err) {
+      console.log(err)
+    } else if (stats.isFile()) {
+//      console.error(event);
+      switch(event.eventname){
+        case 'CLOSE_WRITE,CLOSE':
+        case 'MOVED_TO':
+          rsync(pathname,event.dirname);
+          break;
+      }
+    }
+  })
 
 });
 
 function rsync(pathname,destdir){
-	var cmd=[
-		'rsync',
-		pathname,
-		path.join(rsync_destination,destdir)
-	].concat(rsync_options);
-	cmd.push('>&2');
+  var cmd=[
+    'rsync',
+    pathname,
+    path.join(rsync_destination,destdir)
+  ].concat(rsync_options);
+  cmd.push('>&2');
 
-	try {
-	  console.error(cmd.join(' '));
-		var stdout=child_process.execSync(cmd.join(' '),{
-			cwd: watchdir
-		});
+  try {
+    console.error(cmd.join(' '));
+    var stdout=child_process.execSync(cmd.join(' '),{
+      cwd: watchdir
+    });
 
-	} catch(e){
-		console.log(e.message);
-		notify('Copy failed: '+path.basename(pathname));
-		return;
-	}
+  } catch(e){
+    console.log(e.message);
+    notify('Copy failed: '+path.basename(pathname));
+    return;
+  }
 
-	notify('Copy done: '+path.basename(pathname));
+  notify('Copy done: '+path.basename(pathname));
 
 }
 
 function notify(message){
-	try {
-		child_process.execSync("notify-send '"+message.replace(/'/,"\'")+"'");
-	} catch(e) {
-		console.log(e);
-	}
-	try {
-		child_process.execSync("espeak '"+message.replace(/'/,"\'")+"'");
-	} catch(e) {
-		console.log(e);
-	}
+  try {
+    child_process.execSync("notify-send '"+message.replace(/'/,"\'")+"'");
+  } catch(e) {
+    console.log(e);
+  }
+  try {
+    child_process.execSync("espeak '"+message.replace(/'/,"\'")+"'");
+  } catch(e) {
+    console.log(e);
+  }
 }
 
