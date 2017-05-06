@@ -9,6 +9,7 @@ apt-get install inotify-tools
 
 ## Optional dependencies
 apt-get install libnotify-bin # for visual feedback using notify-send
+
 apt-get install espeak # for audio feedback
 
 ## Install
