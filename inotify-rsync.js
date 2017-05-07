@@ -22,12 +22,12 @@ var csv_parse=require('csv-parser');
 var child_process=require('child_process');
 var watchdir=process.argv[2];
 var rsync_destination=process.argv[3];
-var rsync_options=process.argv.slice(4).join(' ')||[];
+var inotifywait_options=process.argv.slice(4)||[];
 var path=require('path');
 var fs=require('fs');
 
 if (!rsync_destination) {
-  console.log('usage: inotify-sync <dirname> <rsync_destination> <rsync_options>');
+  console.log('usage: inotify-sync <dirname> <rsync_destination> <inotifywait_options>');
   process.exit(1);
 }
 
@@ -35,12 +35,9 @@ process.cwd(watchdir);
 
 var inotifywait_args=[
   '-m',
-  '-e','close_write',
-  '-e','moved_to',
-  '-e','moved_from',
-  '-e','delete',
   '--csv'
-];
+].concat(inotifywait_options);
+console.log(inotifywait_options,inotifywait_args)
 
 inotifywait_args.push('-r');
 inotifywait_args.push('.');
@@ -71,7 +68,9 @@ inotifywait.stdout.pipe(parser).on('data',function(row){
     if (err) {
       console.log(err)
     } else if (stats.isFile()) {
-//      console.error(event);
+      if (DEBUG) {
+				console.error(event);
+			}
       switch(event.eventname){
         case 'CLOSE_WRITE,CLOSE':
         case 'MOVED_TO':
@@ -85,10 +84,10 @@ inotifywait.stdout.pipe(parser).on('data',function(row){
 
 function rsync(pathname,destdir){
   var cmd=[
-    'rsync',
+    'rsync -zav',
     pathname,
     path.join(rsync_destination,destdir)
-  ].concat(rsync_options);
+  ];
   cmd.push('>&2');
 
   try {

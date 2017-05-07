@@ -1,6 +1,6 @@
 {
   "name": "inotify-rsync",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Copy new or modified files using inotifywait and rsync",
   "main": "inotify-sync.js",
   "scripts": {

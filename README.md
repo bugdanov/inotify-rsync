@@ -16,12 +16,12 @@ apt-get install espeak # for audio feedback
 npm install -g inotify-rsync
 
 ## Usage
-    inotify-sync <dirname> <rsync_destination> <rsync_options>
+    inotify-sync <dirname> <rsync_destination> <inotifywait_options>
 
 ## Example usage
     rsync -avz user@server:src/repo /src/
     
-    inotify-rsync  /src/repo/  user@server:src/repo -zav --exclude "'**/.git'"
+    inotify-rsync  /src/repo/  user@server:src/repo --exclude /\.git.*
     
     atom /src/repo
     vi /src/repo/vi-or-die.txt
