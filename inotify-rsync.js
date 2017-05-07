@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+var DEBUG=false;
 var csv_parse=require('csv-parser');
 var child_process=require('child_process');
 var watchdir=process.argv[2];
@@ -37,7 +38,6 @@ var inotifywait_args=[
   '-m',
   '--csv'
 ].concat(inotifywait_options);
-console.log(inotifywait_options,inotifywait_args)
 
 inotifywait_args.push('.');
 
