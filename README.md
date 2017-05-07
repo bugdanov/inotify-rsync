@@ -21,7 +21,7 @@ npm install -g inotify-rsync
 ## Example usage
     rsync -avz user@server:src/repo /src/
     
-    inotify-rsync  /src/repo/  user@server:src/repo --exclude /\.git.*
+    inotify-rsync /src/repo/ user@host:src/repo --recursive --exclude /\.git.*
     
     atom /src/repo
     vi /src/repo/vi-or-die.txt

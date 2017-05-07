@@ -39,7 +39,6 @@ var inotifywait_args=[
 ].concat(inotifywait_options);
 console.log(inotifywait_options,inotifywait_args)
 
-inotifywait_args.push('-r');
 inotifywait_args.push('.');
 
 
