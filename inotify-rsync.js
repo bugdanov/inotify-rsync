@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-var DEBUG=false;
 var csv_parse=require('csv-parser');
 var child_process=require('child_process');
 var watchdir=process.argv[2];
@@ -41,7 +40,6 @@ var inotifywait_args=[
 
 inotifywait_args.push('.');
 
-
 var inotifywait=child_process.spawn('inotifywait',inotifywait_args,{
   cwd: watchdir,
   stdio: ['pipe','pipe',process.stderr]
@@ -49,27 +47,26 @@ var inotifywait=child_process.spawn('inotifywait',inotifywait_args,{
 
 var parser=csv_parse({
   delimiter: ',',
-  columns: ['dirname','eventname','filename']
+  headers: ['dirname','eventname','filename']
 
 });
 
-inotifywait.stdout.pipe(parser).on('data',function(row){
-  var colname=['dirname','eventname','filename'];
-  var i=0;
-  var event={};
-  for (var col in row) {
-    event[colname[i++]]=row[col];
+inotifywait.stdout.pipe(parser).on('data',function(event){
+  if (event.eventname!='CLOSE_WRITE,CLOSE'
+   && event.eventname!='MOVED_TO'
+  ) {
+    return;
   }
-  if (i<3) return;
+
+  if (!event.dirname || !event.filename) {
+    return;
+  }
 
   var pathname=path.join(watchdir,event.dirname,event.filename);
   fs.stat(pathname,function(err,stats){
     if (err) {
       console.log(err)
     } else if (stats.isFile()) {
-      if (DEBUG) {
-				console.error(event);
-			}
       switch(event.eventname){
         case 'CLOSE_WRITE,CLOSE':
         case 'MOVED_TO':
@@ -106,6 +103,7 @@ function rsync(pathname,destdir){
 }
 
 function notify(message){
+  console.log(message);
   try {
     child_process.execSync("notify-send '"+message.replace(/'/,"\'")+"'");
   } catch(e) {
